@@ -1,0 +1,225 @@
+新版本10.0
+
+-客户端stress
+1.程序等待时间sleep维护到cof.ini中
+2.每一次执行线程数的开始时间和结束时间存到data.ini文件中(存储样式如下)
+-客户端data
+1.增加输入框，输入方案手写字母，会根据时间区间新增一列把线程数填充进去。
+
+-配置文件
+data.ini
+
+[data]
+host_name = 172.192.85.79
+user_name = root
+user_password = csglb#2023
+db_name = loganalyze
+
+[time]
+start_time = 2024-11-29 15:50:05
+end_time = 2024-11-29 15:59:56
+
+[Login_200]
+st = 2024-11-29 15:50:00
+ed = 2024-11-29 15:52:00
+t = 200
+
+[Login_600]
+st = 2024-11-29 15:53:00
+ed = 2024-11-29 15:54:00
+t = 600
+
+[Login_1000]
+st = 2024-11-29 15:55:00
+ed = 2024-11-29 16:00:00
+t = 1000
+
+
+test_client.sql
+
+SELECT
+            CONCAT("'", clientcomm_common_time) AS '时间|clientcomm_common_time',
+            total_dequeue_speed AS '持续吞吐率|total_dequeue_speed',
+            max_deal_speed AS '峰值吞吐率|max_deal_speed',
+            avg_deal_time AS '平均时延ms|avg_deal_time',
+            total_enqueue AS '总请求|total_enqueue',
+            failed_cnt AS '失败数|failed_cnt'
+        FROM
+            loganalyze.test_client
+        WHERE
+            ip = '192.168.8.20'
+            AND clientcomm_common_time BETWEEN %s AND %s
+			AND total_dequeue_speed!=0
+        ORDER BY
+            clientcomm_common_time;
+
+新版本9.0
+
+-客户端stress
+1.增加支持方案首字母输入启动。
+2.日志打印开始时，增加方案明细展示。
+3.增加进程关闭后等待时间5s。
+
+-客户端data
+1.获取数据和导出成excel分成2个方法。
+2.去除冗余文件开头命名，只保留开始和结束时间命名。
+
+
+
+新版本8.0
+
+压测工具和分析工具分在2个目录
+
+-客户端stress
+1.Popen() cwd参数化
+2.去掉把开始时间和结束时间写入data.ini文件。
+3.优化日志打印，增加计划开始和结束标识。
+4.删除功能号的if判断。
+5.优化import显示
+
+-客户端data
+1.保存到excel分sheet保存。ps：csv文件不能分sheet页，所以改用excel。
+2.删除冗余try方法。
+3.优化import显示。
+4.优化命名变量开始时间和结束时间写法。
+
+
+新版本7.0
+
+拆分成2个客户端，stress客户端负责压力测试参数初始化和执行以及记录开始和结束时间。
+data客户端负责连接数据库导出成csv文件进行数据分析。
+
+-客户端stress
+1.整理init初始化方法。
+2.删除开始和结束进程方法，优化进运行方法中。
+3.增加StressTesting目录方便参数化管理。
+4.把程序开始时间和结束时间写入到data.ini配置文件中。
+5.优化日志保存，按天保存日志。
+-客户端data
+1.整理init初始化方法。
+2.数据库连接参数写入到data.ini配置文件中。
+3.sql脚本参数化管理写入到metric_info.sql和test_client.sql中。
+4.优化保存CSV文件命名，使用开始和结束程序时间加以区分。
+
+-配置文件
+
+data.ini
+[Login]
+host_name = 172.192.85.79
+user_name = root
+user_password = csglb#2023
+db_name = loganalyze
+
+[Search]
+start_time = 2024-11-22 14:19:26
+end_time = 2024-11-22 14:19:37
+
+
+新版本V6.0
+
+-客户端
+1.增加数据库连接方法。
+2.增加查询后数据到入到csv方法。
+
+
+
+新版本V5.0
+
+-客户端
+1.方法都封装到类里。                           
+2.py名字修改成stress。
+3.删除不必要的try。
+4.日志存档到本地。
+5.启动程序使用subprocess.Popen()方法。
+6.绝对路径改为相对路径
+7.去‘ = ’空格使用正则。
+8.使用input来选择测试计划。'Login'压登录, 'Search'压查询, 'Entrust'压委托,'Mix'混压。
+-配置文件
+[Login]
+test_case=0
+iswithdrawal=0
+start=200
+running_time = 5
+increment = 400
+finish = 1000
+[Search]
+function_number=3071,3201,3203,3207
+test_case=1
+iswithdrawal=0
+start=300
+running_time = 5
+increment = 500
+finish = 1000
+[Entrust]
+test_case=0
+iswithdrawal=1
+start=700
+running_time = 5
+increment = 500
+finish = 1000
+[Mix]
+function_number=5555,4444,3333,2222
+test_case=0
+iswithdrawal=1
+start=400
+running_time = 5
+increment = 600
+finish = 1000
+
+
+
+新版本V4.0
+
+-客户端
+1.改变启动压测exe工具方法，从pyautogui.hotkey("win", "r")方法替换成批处理文件bat启动
+PS：注意！！！由于压测工具exe启动时候会依赖路径下的文件，所以时间控制工具要放在压测exe工具的同级目录下。
+
+
+
+新版本V3.0
+-客户端
+1.优化打开压测工具方法pyautogui.hotkey("win", "r")，有时候会存在中文输入法需要2个回车才能启动exe。
+
+
+
+新版本V2.0
+
+-客户端
+1.初始值deal_second可以从cof.ini获取。
+2.调整程序运行逻辑：
+	1.根据cof.ini配置启动压测工具。
+	2.运行cof.ini配置时间后关闭压测工具。
+	3.根据cof.ini配置修改deal_second值。
+	3.再次启动压测工具。
+	4.当cof.ini配置的finish值大于当前deal_second值时，停止程序。
+
+-配置文件
+[Settings]
+process_name = testclient.exe
+start =200
+running_time = 5
+increment = 100
+finish = 1000
+[Paths]
+process_path = D:\testclient\testclient.exe
+ini_file_path = D:\testclient\client.ini
+
+
+
+新版本V1.0
+
+-客户端
+解决了定时启停压测工具testclient.exe。
+1.定时关闭进程。
+2.修改配置文件client.ini中ClientComm_Common节的deal_second值。
+3.启动进程。
+4.当deal_second达到预期，停止定时器工具。
+-配置文件
+[Settings]
+process_name = testclient.exe
+sleep_time = 5
+increment = 100
+finish = 300
+[Paths]
+process_path = D:\testclient\testclient.exe
+ini_file_path = D:\testclient\client.ini
