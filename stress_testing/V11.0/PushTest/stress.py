@@ -58,6 +58,12 @@ class StressTesting:
         current_value = self.modify_ini_file(self.section, self.option1, start_value)  # 修改INI文件中的当前值
         self.modify_ini_file(self.section, self.option2, test_case)  # 修改测试用例
         self.modify_ini_file(self.section, self.option3, iswithdrawal)  # 修改撤回标志
+
+        # 根据节名决定是否修改 account_cnt
+        if section_name != 'Login':
+            account_cnt_value = current_value
+            self.modify_ini_file(self.section, self.option4, account_cnt_value)  # 修改 account_cnt 的值
+
         return current_value, finish_value, running_time, increment, sleep  # 返回当前值、结束值、运行时间和增量
 
     def run(self):
@@ -117,6 +123,9 @@ class StressTesting:
 
             current_value += increment  # 更新当前值
             new_value = self.modify_ini_file(self.section, self.option1, current_value)  # 修改INI文件中的当前值
+            if section_name != 'Login':
+                new_value2 = self.modify_ini_file(self.section, self.option4, current_value)  # 修改INI文件中的当前值
+
             loop_count += 1  # 增加循环计数
             if new_value > finish_value:
                 logging.info(f'{section_name}计划结束了！')
