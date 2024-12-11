@@ -104,3 +104,6 @@ class DataAnalysis:
 if __name__ == '__main__':
     db_manager = DataAnalysis()
     db_manager.export_to_excel()
+
+
+    
