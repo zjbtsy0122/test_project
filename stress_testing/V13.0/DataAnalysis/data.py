@@ -6,14 +6,14 @@ from datetime import datetime
 
 class DataAnalysis:
     def __init__(self):
-        self.metric_info_path = r'./metric_info.sql'
-        self.test_client_path = r'./test_client.sql'
+        self.metric_info_path = r'./metric_info.sql'  # 指标信息SQL文件路径
+        self.test_client_path = r'./test_client.sql'  # 测试客户端SQL文件路径
         config = configparser.ConfigParser()
-        config.read(r'./data.ini')
-        self.host_name = config['data']['host_name']
-        self.user_name = config['data']['user_name']
-        self.user_password = config['data']['user_password']
-        self.db_name = config['data']['db_name']
+        config.read(r'./data.ini')  # 读取配置文件
+        self.host_name = config['data']['host_name']  # 数据库主机名
+        self.user_name = config['data']['user_name']  # 数据库用户名
+        self.user_password = config['data']['user_password']  # 数据库密码
+        self.db_name = config['data']['db_name']  # 数据库名称
         
 
     def create_connection(self):
@@ -26,17 +26,17 @@ class DataAnalysis:
         connection = self.create_connection()
         cursor = connection.cursor()
         cursor.execute(sql, params)
-        results = cursor.fetchall()
-        columns = [i[0] for i in cursor.description]
+        results = cursor.fetchall()  # 获取所有结果
+        columns = [i[0] for i in cursor.description]  # 获取列名
         cursor.close()
         connection.close()
         return results, columns
 
-    def get_section_data(self,section):
+    def get_section_data(self, section):
         # 获取指定节的数据
         config = configparser.ConfigParser()
-        config.read(r'./data.ini')
-        return dict(config[section])
+        config.read(r'./data.ini')  # 读取配置文件
+        return dict(config[section])  # 返回节的数据字典
 
     def export_to_excel(self):
         # 从SQL文件读取查询语句
@@ -52,8 +52,8 @@ class DataAnalysis:
         # 遍历指定的节名称
         for section_name in ['time_L', 'time_S', 'time_E', 'time_M']:
             section_data = self.get_section_data(section_name)
-            self.start_time = section_data['start_time']
-            self.end_time = section_data['end_time']
+            self.start_time = section_data['start_time']  # 获取开始时间
+            self.end_time = section_data['end_time']  # 获取结束时间
 
             # 格式化开始和结束时间
             starttime = datetime.strptime(self.start_time, '%Y-%m-%d %H:%M:%S').strftime('%Y%m%d_%H%M%S')
@@ -63,7 +63,7 @@ class DataAnalysis:
             results1, columns1 = self.fetch_data(sql1, (self.start_time, self.end_time))
             results2, columns2 = self.fetch_data(sql2, (self.start_time, self.end_time))
 
-            excel_path = f'./Result/{section_name}_{starttime}_{endtime}.xlsx'
+            excel_path = f'./Result/{section_name}_{starttime}_{endtime}.xlsx'  # Excel文件路径
 
             with pd.ExcelWriter(excel_path) as writer:
                 df1 = pd.DataFrame(results1, columns=columns1)  # 创建指标信息DataFrame
@@ -77,14 +77,21 @@ class DataAnalysis:
             df1 = pd.read_excel(excel_path, sheet_name='Metric Info')
             df2 = pd.read_excel(excel_path, sheet_name='Test Client')
 
+            # 创建配置解析器
+            config = configparser.ConfigParser()
+            config.read(r'./data.ini')
+
             # 根据首字母匹配节名称
-            matching_sections = [section for section in config.sections() if section.startswith(section_name[5])]
+            matching_sections = []  # 存储匹配的节名称
+            for section in config.sections():
+                if section.startswith(section_name[5]):  # 检查节名称是否以指定字母开头
+                    matching_sections.append(section)  # 添加匹配的节名称
 
             # 收集所有匹配节的数据
-            section_data_list = []
+            section_data_list = []  # 存储所有匹配节的数据
             for section in matching_sections:
-                section_data = self.get_section_data(section)
-                section_data_list.append(section_data)
+                section_data = self.get_section_data(section)  # 获取节的数据
+                section_data_list.append(section_data)  # 添加到列表中
 
             # 更新新列
             df1['Threads'] = None
@@ -99,10 +106,6 @@ class DataAnalysis:
                 df1.to_excel(writer, sheet_name='Metric Info', index=False)
                 df2.to_excel(writer, sheet_name='Test Client', index=False)
 
-
 if __name__ == '__main__':
     db_manager = DataAnalysis()
-    db_manager.export_to_excel()
-
-
-    
+    db_manager.export_to_excel()  # 执行数据导出
