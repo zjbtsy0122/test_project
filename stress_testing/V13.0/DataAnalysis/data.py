@@ -1,3 +1,6 @@
+
+
+
 import mysql.connector
 import configparser
 import os
@@ -14,13 +17,12 @@ class DataAnalysis:
         self.user_name = config['data']['user_name']  # 数据库用户名
         self.user_password = config['data']['user_password']  # 数据库密码
         self.db_name = config['data']['db_name']  # 数据库名称
-        
 
     def create_connection(self):
         # 创建数据库连接
         connection = mysql.connector.connect(host=self.host_name, user=self.user_name, password=self.user_password, database=self.db_name)
         return connection
-       
+
     def fetch_data(self, sql, params):
         # 执行SQL查询并获取结果
         connection = self.create_connection()
@@ -52,8 +54,13 @@ class DataAnalysis:
         # 遍历指定的节名称
         for section_name in ['time_L', 'time_S', 'time_E', 'time_M']:
             section_data = self.get_section_data(section_name)
-            self.start_time = section_data['start_time']  # 获取开始时间
-            self.end_time = section_data['end_time']  # 获取结束时间
+            self.start_time = section_data.get('start_time')  # 获取开始时间
+            self.end_time = section_data.get('end_time')  # 获取结束时间
+
+            # 处理start_time和end_time为空的情况
+            if not self.start_time or not self.end_time:
+                print(f"Skipping section {section_name} due to missing time range.")
+                continue  # 如果start_time或end_time为空，跳过该节
 
             # 格式化开始和结束时间
             starttime = datetime.strptime(self.start_time, '%Y-%m-%d %H:%M:%S').strftime('%Y%m%d_%H%M%S')
